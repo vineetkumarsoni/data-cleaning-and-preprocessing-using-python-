@@ -1,0 +1,902 @@
+In [1]:
+print("vinnet")
+vinnet
+In [2]:
+import pandas as pd
+In [3]:
+data=pd.read_csv("https://raw.githubusercontent.com/Ankit152/IMDB-sentiment-analysis/master/IMDB-Dataset.csv")
+In [4]:
+data.head()
+Out[4]:
+	review	sentiment
+0	One of the other reviewers has mentioned that ...	positive
+1	A wonderful little production. <br /><br />The...	positive
+2	I thought this was a wonderful way to spend ti...	positive
+3	Basically there's a family where a little boy ...	negative
+4	Petter Mattei's "Love in the Time of Money" is...	positive
+In [5]:
+data.tail()
+Out[5]:
+	review	sentiment
+49995	I thought this movie did a down right good job...	positive
+49996	Bad plot, bad dialogue, bad acting, idiotic di...	negative
+49997	I am a Catholic taught in parochial elementary...	negative
+49998	I'm going to have to disagree with the previou...	negative
+49999	No one expects the Star Trek movies to be high...	negative
+In [6]:
+data.sample(5)
+Out[6]:
+	review	sentiment
+16342	I had high hopes for Troy and I am so bitterly...	negative
+44340	First of all, let me comment that the audience...	positive
+12136	I enjoyed this one, because I can relate to it...	positive
+1506	Now this is what I'd call a good horror. With ...	positive
+24737	I thought it was an extremely clever film. I w...	positive
+In [7]:
+data["review"][9]
+Out[7]:
+'If you like original gut wrenching laughter you will like this movie. If you are young or old then you will love this movie, hell even my mom liked it.<br /><br />Great Camp!!!'
+In [8]:
+data["review"][9].lower()
+Out[8]:
+'if you like original gut wrenching laughter you will like this movie. if you are young or old then you will love this movie, hell even my mom liked it.<br /><br />great camp!!!'
+In [9]:
+data.shape
+Out[9]:
+(50000, 2)
+In [10]:
+data["review"].str.lower()
+Out[10]:
+0        one of the other reviewers has mentioned that ...
+1        a wonderful little production. <br /><br />the...
+2        i thought this was a wonderful way to spend ti...
+3        basically there's a family where a little boy ...
+4        petter mattei's "love in the time of money" is...
+                               ...                        
+49995    i thought this movie did a down right good job...
+49996    bad plot, bad dialogue, bad acting, idiotic di...
+49997    i am a catholic taught in parochial elementary...
+49998    i'm going to have to disagree with the previou...
+49999    no one expects the star trek movies to be high...
+Name: review, Length: 50000, dtype: object
+In [11]:
+# cleaning  of data by removing html tags
+In [12]:
+import re
+In [13]:
+def remove_html_tags(text):
+    pattern=re.compile('<.*?>')
+    return pattern.sub("",text)
+In [14]:
+text=data["review"][1]
+In [15]:
+print(text)
+A wonderful little production. <br /><br />The filming technique is very unassuming- very old-time-BBC fashion and gives a comforting, and sometimes discomforting, sense of realism to the entire piece. <br /><br />The actors are extremely well chosen- Michael Sheen not only "has got all the polari" but he has all the voices down pat too! You can truly see the seamless editing guided by the references to Williams' diary entries, not only is it well worth the watching but it is a terrificly written and performed piece. A masterful production about one of the great master's of comedy and his life. <br /><br />The realism really comes home with the little things: the fantasy of the guard which, rather than use the traditional 'dream' techniques remains solid then disappears. It plays on our knowledge and our senses, particularly with the scenes concerning Orton and Halliwell and the sets (particularly of their flat with Halliwell's murals decorating every surface) are terribly well done.
+In [16]:
+remove_html_tags(text)
+Out[16]:
+'A wonderful little production. The filming technique is very unassuming- very old-time-BBC fashion and gives a comforting, and sometimes discomforting, sense of realism to the entire piece. The actors are extremely well chosen- Michael Sheen not only "has got all the polari" but he has all the voices down pat too! You can truly see the seamless editing guided by the references to Williams\' diary entries, not only is it well worth the watching but it is a terrificly written and performed piece. A masterful production about one of the great master\'s of comedy and his life. The realism really comes home with the little things: the fantasy of the guard which, rather than use the traditional \'dream\' techniques remains solid then disappears. It plays on our knowledge and our senses, particularly with the scenes concerning Orton and Halliwell and the sets (particularly of their flat with Halliwell\'s murals decorating every surface) are terribly well done.'
+In [17]:
+data["review"].apply(remove_html_tags)
+Out[17]:
+0        One of the other reviewers has mentioned that ...
+1        A wonderful little production. The filming tec...
+2        I thought this was a wonderful way to spend ti...
+3        Basically there's a family where a little boy ...
+4        Petter Mattei's "Love in the Time of Money" is...
+                               ...                        
+49995    I thought this movie did a down right good job...
+49996    Bad plot, bad dialogue, bad acting, idiotic di...
+49997    I am a Catholic taught in parochial elementary...
+49998    I'm going to have to disagree with the previou...
+49999    No one expects the Star Trek movies to be high...
+Name: review, Length: 50000, dtype: object
+In [18]:
+data["review"]
+Out[18]:
+0        One of the other reviewers has mentioned that ...
+1        A wonderful little production. <br /><br />The...
+2        I thought this was a wonderful way to spend ti...
+3        Basically there's a family where a little boy ...
+4        Petter Mattei's "Love in the Time of Money" is...
+                               ...                        
+49995    I thought this movie did a down right good job...
+49996    Bad plot, bad dialogue, bad acting, idiotic di...
+49997    I am a Catholic taught in parochial elementary...
+49998    I'm going to have to disagree with the previou...
+49999    No one expects the Star Trek movies to be high...
+Name: review, Length: 50000, dtype: object
+In [19]:
+data["review"][25]
+Out[19]:
+"The Karen Carpenter Story shows a little more about singer Karen Carpenter's complex life. Though it fails in giving accurate facts, and details.<br /><br />Cynthia Gibb (portrays Karen) was not a fine election. She is a good actress , but plays a very naive and sort of dumb Karen Carpenter. I think that the role needed a stronger character. Someone with a stronger personality.<br /><br />Louise Fletcher role as Agnes Carpenter is terrific, she does a great job as Karen's mother.<br /><br />It has great songs, which could have been included in a soundtrack album. Unfortunately they weren't, though this movie was on the top of the ratings in USA and other several countries"
+In [20]:
+# code to remove url from text
+In [21]:
+def remove_url(text):
+    pattern=re.compile(r'https?://\S+|www\.\S+')
+    return pattern.sub("",text)
+In [22]:
+text1="checkout to my youtube channel https://www.youtube.com/watch?v=V9tJCQoBakA&t=225s"text2="please try to google here www.google.com"text3="here is my url which is not secure http://dummy.com"
+In [23]:
+remove_url(text1)
+Out[23]:
+'checkout to my youtube channel '
+In [24]:
+import string
+In [25]:
+string.punctuation
+Out[25]:
+'!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+In [26]:
+exclude=string.punctuation
+In [27]:
+for char in exclude:
+    print(char)
+!
+"
+#
+$
+%
+&
+'
+(
+)
+*
++
+,
+-
+.
+/
+:
+;
+<
+=
+>
+?
+@
+[
+\
+]
+^
+_
+`
+{
+|
+}
+~
+In [28]:
+def remove_punc(text):
+    for char in exclude:
+        text=text.replace(char,"")
+    return text
+In [29]:
+text="string @ *() with punctuaion.!"
+In [30]:
+remove_punc(text)
+Out[30]:
+'string   with punctuaion'
+In [31]:
+text2="my name vineet so##n#$#@!$%^&^%&$^%$%#^$^$%&%*^*^*^*%&$^#%NI!!!!!!!!!"
+In [32]:
+remove_punc(text2)
+Out[32]:
+'my name vineet sonNI'
+In [33]:
+def remove_punc1(text):
+    return text.translate(str.maketrans("","",exclude))
+In [34]:
+remove_punc1(text)
+Out[34]:
+'string   with punctuaion'
+In [35]:
+data["review"]=data["review"].apply(remove_punc)
+In [36]:
+text="FYI this is not true"text2="LAMO the class was so funny"text3="i want report ASAP"
+In [37]:
+chat_words={
+   " AFAIK":"As Far As I Know","AFK": "Away From Keyboard","ASAP":"As Soon As Possible","BTW":"By The Way","B4":"Before","LAMO":"Laugh My A.. Off","FYI":"For your information"}
+In [38]:
+chat_words["ASAP"]
+Out[38]:
+'As Soon As Possible'
+In [39]:
+def chat_conversion(text):
+    new_text=[]
+    for w in text.split():
+        if w.upper() in chat_words:
+            new_text.append(chat_words[w.upper()])
+        else:
+            new_text.append(w)
+    return " ".join(new_text)
+In [40]:
+text
+Out[40]:
+'FYI this is not true'
+In [41]:
+text.split()
+Out[41]:
+['FYI', 'this', 'is', 'not', 'true']
+In [42]:
+chat_conversion(text)
+Out[42]:
+'For your information this is not true'
+In [43]:
+chat_conversion(text2)
+Out[43]:
+'Laugh My A.. Off the class was so funny'
+In [44]:
+for w in text3.split():
+        if w.upper() in chat_words:
+            print(chat_words[w.upper()])
+As Soon As Possible
+In [45]:
+for w in text2.split():
+        if w.upper() in chat_words:
+            print(chat_words[w.upper()])
+Laugh My A.. Off
+In [46]:
+for w in text.split():
+        if w.upper() in chat_words:
+            print(chat_words[w.upper()])
+For your information
+In [47]:
+"5".join(["As Soon As Possible", 'this', 'is', 'not', 'true'])
+Out[47]:
+'As Soon As Possible5this5is5not5true'
+In [48]:
+"$".join(["As Soon As Possible", 'this', 'is', 'not', 'true'])
+Out[48]:
+'As Soon As Possible$this$is$not$true'
+In [49]:
+"             ".join(["As Soon As Possible", 'this', 'is', 'not', 'true'])
+Out[49]:
+'As Soon As Possible             this             is             not             true'
+In [50]:
+" ".join(["As Soon As Possible", 'this', 'is', 'not', 'true'])
+Out[50]:
+'As Soon As Possible this is not true'
+In [51]:
+#spell correction
+In [52]:
+pip install textblob
+Requirement already satisfied: textblob in c:\users\vinee\anaconda3\lib\site-packages (0.18.0.post0)Note: you may need to restart the kernel to use updated packages.
+
+Requirement already satisfied: nltk>=3.8 in c:\users\vinee\anaconda3\lib\site-packages (from textblob) (3.8.1)
+Requirement already satisfied: click in c:\users\vinee\anaconda3\lib\site-packages (from nltk>=3.8->textblob) (8.1.7)
+Requirement already satisfied: joblib in c:\users\vinee\anaconda3\lib\site-packages (from nltk>=3.8->textblob) (1.2.0)
+Requirement already satisfied: regex>=2021.8.3 in c:\users\vinee\anaconda3\lib\site-packages (from nltk>=3.8->textblob) (2023.10.3)
+Requirement already satisfied: tqdm in c:\users\vinee\anaconda3\lib\site-packages (from nltk>=3.8->textblob) (4.65.0)
+Requirement already satisfied: colorama in c:\users\vinee\anaconda3\lib\site-packages (from click->nltk>=3.8->textblob) (0.4.6)
+In [53]:
+import textblob
+In [54]:
+text="this is my processing notebook pleae download this ntebook"
+In [55]:
+from textblob import TextBlob
+In [56]:
+txtblob=TextBlob(text)
+In [57]:
+txtblob.correct().string
+Out[57]:
+'this is my processing notebook please download this notebook'
+In [58]:
+text2="here is my nme tht is vineet soni and he is good studant"
+In [59]:
+txtblob2=TextBlob(text2)
+In [60]:
+txtblob2.correct().string
+Out[60]:
+'here is my me the is finest son and he is good student'
+In [61]:
+# stop word removing
+In [62]:
+import nltk
+In [63]:
+from nltk.corpus import stopwords
+In [64]:
+nltk.download('stopwords')
+[nltk_data] Downloading package stopwords to
+[nltk_data]     C:\Users\vinee\AppData\Roaming\nltk_data...
+[nltk_data]   Package stopwords is already up-to-date!
+Out[64]:
+True
+In [65]:
+stopwords.words("english")
+Out[65]:
+['i',
+ 'me',
+ 'my',
+ 'myself',
+ 'we',
+ 'our',
+ 'ours',
+ 'ourselves',
+ 'you',
+ "you're",
+ "you've",
+ "you'll",
+ "you'd",
+ 'your',
+ 'yours',
+ 'yourself',
+ 'yourselves',
+ 'he',
+ 'him',
+ 'his',
+ 'himself',
+ 'she',
+ "she's",
+ 'her',
+ 'hers',
+ 'herself',
+ 'it',
+ "it's",
+ 'its',
+ 'itself',
+ 'they',
+ 'them',
+ 'their',
+ 'theirs',
+ 'themselves',
+ 'what',
+ 'which',
+ 'who',
+ 'whom',
+ 'this',
+ 'that',
+ "that'll",
+ 'these',
+ 'those',
+ 'am',
+ 'is',
+ 'are',
+ 'was',
+ 'were',
+ 'be',
+ 'been',
+ 'being',
+ 'have',
+ 'has',
+ 'had',
+ 'having',
+ 'do',
+ 'does',
+ 'did',
+ 'doing',
+ 'a',
+ 'an',
+ 'the',
+ 'and',
+ 'but',
+ 'if',
+ 'or',
+ 'because',
+ 'as',
+ 'until',
+ 'while',
+ 'of',
+ 'at',
+ 'by',
+ 'for',
+ 'with',
+ 'about',
+ 'against',
+ 'between',
+ 'into',
+ 'through',
+ 'during',
+ 'before',
+ 'after',
+ 'above',
+ 'below',
+ 'to',
+ 'from',
+ 'up',
+ 'down',
+ 'in',
+ 'out',
+ 'on',
+ 'off',
+ 'over',
+ 'under',
+ 'again',
+ 'further',
+ 'then',
+ 'once',
+ 'here',
+ 'there',
+ 'when',
+ 'where',
+ 'why',
+ 'how',
+ 'all',
+ 'any',
+ 'both',
+ 'each',
+ 'few',
+ 'more',
+ 'most',
+ 'other',
+ 'some',
+ 'such',
+ 'no',
+ 'nor',
+ 'not',
+ 'only',
+ 'own',
+ 'same',
+ 'so',
+ 'than',
+ 'too',
+ 'very',
+ 's',
+ 't',
+ 'can',
+ 'will',
+ 'just',
+ 'don',
+ "don't",
+ 'should',
+ "should've",
+ 'now',
+ 'd',
+ 'll',
+ 'm',
+ 'o',
+ 're',
+ 've',
+ 'y',
+ 'ain',
+ 'aren',
+ "aren't",
+ 'couldn',
+ "couldn't",
+ 'didn',
+ "didn't",
+ 'doesn',
+ "doesn't",
+ 'hadn',
+ "hadn't",
+ 'hasn',
+ "hasn't",
+ 'haven',
+ "haven't",
+ 'isn',
+ "isn't",
+ 'ma',
+ 'mightn',
+ "mightn't",
+ 'mustn',
+ "mustn't",
+ 'needn',
+ "needn't",
+ 'shan',
+ "shan't",
+ 'shouldn',
+ "shouldn't",
+ 'wasn',
+ "wasn't",
+ 'weren',
+ "weren't",
+ 'won',
+ "won't",
+ 'wouldn',
+ "wouldn't"]
+In [66]:
+def remove_stopwords(text):
+    new_text=[]
+
+    for word in text.split():
+        if word in stopwords.words("english"):
+            new_text.append("")
+        else:
+            new_text.append(word.strip())
+
+
+    return " ".join(new_text).replace("   ","")
+In [67]:
+text="i am sunny and we are learning nlp and here is why nlp are important"
+In [68]:
+remove_stopwords(text)
+Out[68]:
+'  sunny learning nlp  nlp  important'
+In [69]:
+# emoji
+import emoji
+In [70]:
+pip install emoji
+Requirement already satisfied: emoji in c:\users\vinee\anaconda3\lib\site-packages (2.11.0)
+Note: you may need to restart the kernel to use updated packages.
+In [71]:
+import emoji
+In [72]:
+original_text = "Hello,😊#$ how are you today? 🌟"
+In [73]:
+def remove_emoji(text):
+    clean_text=emoji.demojize(text)
+    return clean_text
+In [74]:
+remove_emoji(original_text)
+Out[74]:
+'Hello,:smiling_face_with_smiling_eyes:#$ how are you today? :glowing_star:'
+In [75]:
+text="""Hello, 😃💁😃💁 People•🐻🌻 Animals•🍔🍹 Food•🎷⚽ Activities•🚘🌇 Travel•💡🎉 Objects•💖🔣 Symbols•🎌🏳️‍🌈 Flags"""
+In [76]:
+print(remove_emoji(text))
+Hello, :grinning_face_with_big_eyes::person_tipping_hand::grinning_face_with_big_eyes::person_tipping_hand: People
+•:bear::sunflower: Animals
+•:hamburger::tropical_drink: Food
+•:saxophone::soccer_ball: Activities
+•:oncoming_automobile::sunset: Travel
+•:light_bulb::party_popper: Objects
+•:sparkling_heart::input_symbols: Symbols
+•:crossed_flags::rainbow_flag: Flags
+In [77]:
+# tokenization
+In [78]:
+text="i am vineet kumar soni ana working as a ai,ml,gen_ai aspirant"
+In [79]:
+text.split(",")
+Out[79]:
+['i am vineet kumar soni ana working as a ai', 'ml', 'gen_ai aspirant']
+In [80]:
+text4="where should i go? i habve 3 days hoilidays, Can you sugguest me?"
+In [81]:
+text4.split(".")
+Out[81]:
+['where should i go? i habve 3 days hoilidays, Can you sugguest me?']
+In [82]:
+text3="i live in bangalore!!"
+In [83]:
+re.findall("[\w]+",text3)
+Out[83]:
+['i', 'live', 'in', 'bangalore']
+In [84]:
+import nltk
+In [85]:
+from nltk.tokenize import word_tokenize,sent_tokenize
+In [86]:
+nltk.download("punkt")
+[nltk_data] Downloading package punkt to
+[nltk_data]     C:\Users\vinee\AppData\Roaming\nltk_data...
+[nltk_data]   Package punkt is already up-to-date!
+Out[86]:
+True
+In [87]:
+my_text="i am going to visit delhi tomorrow evening"
+In [88]:
+word_tokenize(my_text)
+Out[88]:
+['i', 'am', 'going', 'to', 'visit', 'delhi', 'tomorrow', 'evening']
+In [89]:
+my_text2="i am going to visit delhi tomorrow evening!!!!"
+In [90]:
+word_tokenize(my_text2)
+Out[90]:
+['i',
+ 'am',
+ 'going',
+ 'to',
+ 'visit',
+ 'delhi',
+ 'tomorrow',
+ 'evening',
+ '!',
+ '!',
+ '!',
+ '!']
+In [91]:
+my_corpus="""Generative artificial intelligence (generative AI, genAI, GenAI, GAI or GenAI[1]) is artificial intelligence capable of generating text, images or other data using generative models,[2] often in response to prompts.[3][4] Generative AI models learn the patterns and structure of their input training data and then generate new data that has similar characteristics.[5][6]
+Improvements in transformer-based deep neural networks enabled an AI boom of generative AI systems in the early 2020s. These include large language model (LLM) chatbots such as ChatGPT, Copilot, Bard, and LLaMA, and text-to-image artificial intelligence art systems such as Stable Diffusion, Midjourney, and DALL-E.[7][8][9] Companies such as OpenAI, Anthropic, Microsoft, Google, and Baidu as well as numerous smaller firms have developed generative AI models.[3][10][11]"""
+In [92]:
+my_corpus
+Out[92]:
+'Generative artificial intelligence (generative AI, genAI, GenAI, GAI or GenAI[1]) is artificial intelligence capable of generating text, images or other data using generative models,[2] often in response to prompts.[3][4] Generative AI models learn the patterns and structure of their input training data and then generate new data that has similar characteristics.[5][6]\n\nImprovements in transformer-based deep neural networks enabled an AI boom of generative AI systems in the early 2020s. These include large language model (LLM) chatbots such as ChatGPT, Copilot, Bard, and LLaMA, and text-to-image artificial intelligence art systems such as Stable Diffusion, Midjourney, and DALL-E.[7][8][9] Companies such as OpenAI, Anthropic, Microsoft, Google, and Baidu as well as numerous smaller firms have developed generative AI models.[3][10][11]'
+In [93]:
+sent_tokenize(my_corpus)
+Out[93]:
+['Generative artificial intelligence (generative AI, genAI, GenAI, GAI or GenAI[1]) is artificial intelligence capable of generating text, images or other data using generative models,[2] often in response to prompts.',
+ '[3][4] Generative AI models learn the patterns and structure of their input training data and then generate new data that has similar characteristics.',
+ '[5][6]\n\nImprovements in transformer-based deep neural networks enabled an AI boom of generative AI systems in the early 2020s.',
+ 'These include large language model (LLM) chatbots such as ChatGPT, Copilot, Bard, and LLaMA, and text-to-image artificial intelligence art systems such as Stable Diffusion, Midjourney, and DALL-E.[7][8][9] Companies such as OpenAI, Anthropic, Microsoft, Google, and Baidu as well as numerous smaller firms have developed generative AI models.',
+ '[3][10][11]']
+In [94]:
+pip install spacy
+Requirement already satisfied: spacy in c:\users\vinee\anaconda3\lib\site-packages (3.7.4)
+Requirement already satisfied: spacy-legacy<3.1.0,>=3.0.11 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (3.0.12)
+Requirement already satisfied: spacy-loggers<2.0.0,>=1.0.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (1.0.5)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (1.0.10)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (2.0.8)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (3.0.9)
+Requirement already satisfied: thinc<8.3.0,>=8.2.2 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (8.2.3)
+Requirement already satisfied: wasabi<1.2.0,>=0.9.1 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (1.1.2)
+Requirement already satisfied: srsly<3.0.0,>=2.4.3 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (2.4.8)
+Requirement already satisfied: catalogue<2.1.0,>=2.0.6 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (2.0.10)
+Requirement already satisfied: weasel<0.4.0,>=0.1.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (0.3.4)
+Requirement already satisfied: typer<0.10.0,>=0.3.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (0.9.4)
+Requirement already satisfied: smart-open<7.0.0,>=5.2.1 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (5.2.1)
+Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (4.65.0)
+Requirement already satisfied: requests<3.0.0,>=2.13.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (2.31.0)
+Requirement already satisfied: pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (1.10.12)
+Requirement already satisfied: jinja2 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (3.1.3)
+Requirement already satisfied: setuptools in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (68.2.2)
+Requirement already satisfied: packaging>=20.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (23.1)
+Requirement already satisfied: langcodes<4.0.0,>=3.2.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (3.3.0)
+Requirement already satisfied: numpy>=1.19.0 in c:\users\vinee\anaconda3\lib\site-packages (from spacy) (1.26.4)
+Requirement already satisfied: typing-extensions>=4.2.0 in c:\users\vinee\anaconda3\lib\site-packages (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy) (4.9.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in c:\users\vinee\anaconda3\lib\site-packages (from requests<3.0.0,>=2.13.0->spacy) (2.0.4)
+Requirement already satisfied: idna<4,>=2.5 in c:\users\vinee\anaconda3\lib\site-packages (from requests<3.0.0,>=2.13.0->spacy) (3.4)
+Requirement already satisfied: urllib3<3,>=1.21.1 in c:\users\vinee\anaconda3\lib\site-packages (from requests<3.0.0,>=2.13.0->spacy) (2.0.7)
+Requirement already satisfied: certifi>=2017.4.17 in c:\users\vinee\anaconda3\lib\site-packages (from requests<3.0.0,>=2.13.0->spacy) (2024.2.2)
+Requirement already satisfied: blis<0.8.0,>=0.7.8 in c:\users\vinee\anaconda3\lib\site-packages (from thinc<8.3.0,>=8.2.2->spacy) (0.7.11)
+Requirement already satisfied: confection<1.0.0,>=0.0.1 in c:\users\vinee\anaconda3\lib\site-packages (from thinc<8.3.0,>=8.2.2->spacy) (0.1.4)
+Requirement already satisfied: colorama in c:\users\vinee\anaconda3\lib\site-packages (from tqdm<5.0.0,>=4.38.0->spacy) (0.4.6)
+Requirement already satisfied: click<9.0.0,>=7.1.1 in c:\users\vinee\anaconda3\lib\site-packages (from typer<0.10.0,>=0.3.0->spacy) (8.1.7)
+Requirement already satisfied: cloudpathlib<0.17.0,>=0.7.0 in c:\users\vinee\anaconda3\lib\site-packages (from weasel<0.4.0,>=0.1.0->spacy) (0.16.0)
+Requirement already satisfied: MarkupSafe>=2.0 in c:\users\vinee\anaconda3\lib\site-packages (from jinja2->spacy) (2.1.3)
+Note: you may need to restart the kernel to use updated packages.
+In [95]:
+import spacy
+nlp = spacy.load("en_core_web_sm")
+In [96]:
+def tokenize_text(text):
+    # Process the text with the spacy model
+    doc = nlp(text)
+    
+    # Extract tokens from the processed document
+    tokens = [token.text for token in doc]
+    
+    return tokens
+In [97]:
+tokens=tokenize_text(my_corpus)
+In [98]:
+for word in tokens:
+    print(word)
+Generative
+artificial
+intelligence
+(
+generative
+AI
+,
+genAI
+,
+GenAI
+,
+GAI
+or
+GenAI[1
+]
+)
+is
+artificial
+intelligence
+capable
+of
+generating
+text
+,
+images
+or
+other
+data
+using
+generative
+models,[2
+]
+often
+in
+response
+to
+prompts.[3][4
+]
+Generative
+AI
+models
+learn
+the
+patterns
+and
+structure
+of
+their
+input
+training
+data
+and
+then
+generate
+new
+data
+that
+has
+similar
+characteristics.[5][6
+]
+
+
+
+Improvements
+in
+transformer
+-
+based
+deep
+neural
+networks
+enabled
+an
+AI
+boom
+of
+generative
+AI
+systems
+in
+the
+early
+2020s
+.
+These
+include
+large
+language
+model
+(
+LLM
+)
+chatbots
+such
+as
+ChatGPT
+,
+Copilot
+,
+Bard
+,
+and
+LLaMA
+,
+and
+text
+-
+to
+-
+image
+artificial
+intelligence
+art
+systems
+such
+as
+Stable
+Diffusion
+,
+Midjourney
+,
+and
+DALL
+-
+E.[7][8][9
+]
+Companies
+such
+as
+OpenAI
+,
+Anthropic
+,
+Microsoft
+,
+Google
+,
+and
+Baidu
+as
+well
+as
+numerous
+smaller
+firms
+have
+developed
+generative
+AI
+models.[3][10][11
+]
+In [99]:
+from nltk.stem import PorterStemmer
+def stemming(text):
+    obj=PorterStemmer()
+
+    stem_word=[obj.stem(word) for word in text.split()]
+
+    return stem_word
+In [100]:
+input_sentence = "The quick brown foxes are jumping over the lazy dogs"
+In [102]:
+stemming(text)
+Out[102]:
+['i',
+ 'am',
+ 'vineet',
+ 'kumar',
+ 'soni',
+ 'ana',
+ 'work',
+ 'as',
+ 'a',
+ 'ai,ml,gen_ai',
+ 'aspir']
+In [103]:
+stemming(input_sentence)
+Out[103]:
+['the', 'quick', 'brown', 'fox', 'are', 'jump', 'over', 'the', 'lazi', 'dog']
+In [104]:
+nltk.download('wordnet')
+[nltk_data] Downloading package wordnet to
+[nltk_data]     C:\Users\vinee\AppData\Roaming\nltk_data...
+Out[104]:
+True
+In [105]:
+from nltk.stem import WordNetLemmatizer
+def lammatization(text):
+    words=text.split()
+
+    lemmetizer=WordNetLemmatizer()
+
+    lemetized_word=[lemmetizer.lemmatize(word) for word in words]
+    
+    return lemetized_word
+In [106]:
+text="'Ikigai' by Hector Garcia and Francesc Miralles explores the Japanese concept of finding one's purpose in life by analyzing the habits and beliefs of the world's longest-living people. Through case studies, the book offers practical insights on how to live a more fulfilling life."
+In [107]:
+lammatization(text)
+Out[107]:
+["'Ikigai'",
+ 'by',
+ 'Hector',
+ 'Garcia',
+ 'and',
+ 'Francesc',
+ 'Miralles',
+ 'explores',
+ 'the',
+ 'Japanese',
+ 'concept',
+ 'of',
+ 'finding',
+ "one's",
+ 'purpose',
+ 'in',
+ 'life',
+ 'by',
+ 'analyzing',
+ 'the',
+ 'habit',
+ 'and',
+ 'belief',
+ 'of',
+ 'the',
+ "world's",
+ 'longest-living',
+ 'people.',
+ 'Through',
+ 'case',
+ 'studies,',
+ 'the',
+ 'book',
+ 'offer',
+ 'practical',
+ 'insight',
+ 'on',
+ 'how',
+ 'to',
+ 'live',
+ 'a',
+ 'more',
+ 'fulfilling',
+ 'life.']
+In [ ]:
+ 
